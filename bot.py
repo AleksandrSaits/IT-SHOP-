@@ -2,9 +2,18 @@ import logging
 import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler, ContextTypes
+from flask import Flask
+import threading
 
 # Твой токен
 TOKEN = "8762519077:AAF719ES-Tq2t42CJN5iusSwR7kLc8zR87k"
+
+# Создаем Flask приложение (чтобы Render думал, что это веб-сервер)
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return "Бот работает!"
 
 # Включаем логирование
 logging.basicConfig(
@@ -21,7 +30,6 @@ products = [
 ]
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Обработчик команды /start"""
     keyboard = [
         [InlineKeyboardButton("📦 Каталог", callback_data="catalog")],
         [InlineKeyboardButton("🛒 Корзина", callback_data="cart")],
@@ -29,13 +37,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     
     await update.message.reply_text(
-        "👋 Добро пожаловать в магазин!\n"
-        "Выберите действие:",
+        "👋 Добро пожаловать в магазин!\nВыберите действие:",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
 async def catalog(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Показываем каталог"""
     query = update.callback_query
     await query.answer()
     
@@ -55,7 +61,6 @@ async def catalog(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def show_product(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Детали товара"""
     query = update.callback_query
     await query.answer()
     
@@ -68,14 +73,11 @@ async def show_product(update: Update, context: ContextTypes.DEFAULT_TYPE):
     ]
     
     await query.edit_message_text(
-        f"📦 {product['name']}\n"
-        f"💰 Цена: {product['price']}₽\n\n"
-        f"{product['desc']}",
+        f"📦 {product['name']}\n💰 Цена: {product['price']}₽\n\n{product['desc']}",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
 async def add_to_cart(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Добавляем в корзину"""
     query = update.callback_query
     await query.answer()
     
@@ -97,7 +99,6 @@ async def add_to_cart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 async def show_cart(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Показываем корзину"""
     query = update.callback_query
     await query.answer()
     
@@ -122,7 +123,6 @@ async def show_cart(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.edit_message_text(text, reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def checkout(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Оформление заказа"""
     query = update.callback_query
     await query.answer()
     
@@ -132,8 +132,7 @@ async def checkout(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     
     await query.edit_message_text(
-        "✅ Заказ оформлен!\n"
-        "Скоро с вами свяжутся!",
+        "✅ Заказ оформлен!\nСкоро с вами свяжутся!",
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("🏠 Главное меню", callback_data="back")]
         ])
@@ -141,57 +140,50 @@ async def checkout(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data['cart'] = []
 
 async def clear_cart(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Очистка корзины"""
     query = update.callback_query
     await query.answer()
     context.user_data['cart'] = []
     await query.edit_message_text("🗑 Корзина очищена")
 
 async def contacts(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Контакты"""
     query = update.callback_query
     await query.answer()
     
     await query.edit_message_text(
-        "📞 Наши контакты:\n\n"
-        "Телефон: +7 (999) 123-45-67\n"
-        "Email: shop@example.com",
+        "📞 Наши контакты:\n\nТелефон: +7 (999) 123-45-67\nEmail: shop@example.com",
         reply_markup=InlineKeyboardMarkup([
             [InlineKeyboardButton("◀️ Назад", callback_data="back")]
         ])
     )
 
 async def back(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Назад в меню"""
     query = update.callback_query
     await query.answer()
     await start(query, context)
 
-def main():
-    """Запуск бота"""
-    # Для Render нужно использовать webhook режим
-    # Но пока оставим polling для простоты
+def run_bot():
+    """Запуск бота в отдельном потоке"""
+    application = Application.builder().token(TOKEN).build()
     
-    app = Application.builder().token(TOKEN).build()
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CallbackQueryHandler(catalog, pattern="^catalog$"))
+    application.add_handler(CallbackQueryHandler(show_product, pattern="^product_"))
+    application.add_handler(CallbackQueryHandler(add_to_cart, pattern="^add_"))
+    application.add_handler(CallbackQueryHandler(show_cart, pattern="^cart$"))
+    application.add_handler(CallbackQueryHandler(checkout, pattern="^checkout$"))
+    application.add_handler(CallbackQueryHandler(clear_cart, pattern="^clear$"))
+    application.add_handler(CallbackQueryHandler(contacts, pattern="^contacts$"))
+    application.add_handler(CallbackQueryHandler(back, pattern="^back$"))
     
-    # Добавляем обработчики
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(catalog, pattern="^catalog$"))
-    app.add_handler(CallbackQueryHandler(show_product, pattern="^product_"))
-    app.add_handler(CallbackQueryHandler(add_to_cart, pattern="^add_"))
-    app.add_handler(CallbackQueryHandler(show_cart, pattern="^cart$"))
-    app.add_handler(CallbackQueryHandler(checkout, pattern="^checkout$"))
-    app.add_handler(CallbackQueryHandler(clear_cart, pattern="^clear$"))
-    app.add_handler(CallbackQueryHandler(contacts, pattern="^contacts$"))
-    app.add_handler(CallbackQueryHandler(back, pattern="^back$"))
-    
-    # Получаем порт из переменных окружения (нужно для Render)
-    port = int(os.environ.get('PORT', 8080))
-    
-    print(f"Бот запускается на порту {port}...")
-    
-    # Запускаем бота
-    app.run_polling()
+    print("Бот запущен!")
+    application.run_polling()
 
 if __name__ == "__main__":
-    main()
+    # Запускаем бота в фоне
+    bot_thread = threading.Thread(target=run_bot)
+    bot_thread.daemon = True
+    bot_thread.start()
+    
+    # Запускаем Flask (для Render)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
