@@ -442,8 +442,394 @@
                         </div>
                         
                         <div class="product-footer">
+                            <div class="review-title">
+                                <i class="fas fa-star" style="color: #ffc107;"></i>
+                                Последние отзывы
+                            </div>
+                            ${recentReviews || '<div style="color: var(--gray);">Пока нет отзывов</div>'}
+                        </div>
+                        
+                        <div class="product-footer">
                             <div class="price-block">
                                 <span class="current-price">${product.price} ₽</span>
                                 ${product.oldPrice ? `<span class="old-price">${product.oldPrice} ₽</span>` : ''}
                             </div>
-                            <button class="buy-btn" oncli
+                            <button class="buy-btn" onclick="addToCart(${product.id})">
+                                <i class="fas fa-shopping-cart"></i> Купить
+                            </button>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Добавление в корзину
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            cart.push(product);
+            updateCartUI();
+            
+            tg.HapticFeedback.impactOccurred('light');
+            tg.showPopup({
+                title: '✅ Добавлено в корзину',
+                message: `${product.title}`,
+                buttons: [
+                    {id: 'cart', text: 'Перейти в корзину'},
+                    {id: 'continue', type: 'cancel', text: 'Продолжить'}
+                ]
+            }, (btnId) => {
+                if (btnId === 'cart') {
+                    toggleCart();
+                }
+            });
+        }
+
+        // Обновление корзины
+        function updateCartUI() {
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            const cartBadge = document.getElementById('cartBadge');
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--gray);">Корзина пуста</div>';
+                cartTotal.textContent = 'Итого: 0 ₽';
+                cartBadge.style.display = 'none';
+            } else {
+                let total = 0;
+                let itemsHtml = '';
+                
+                cart.forEach((item, index) => {
+                    total += item.price;
+                    itemsHtml += `
+                        <div class="cart-item">
+                            <div>
+                                <div style="font-weight: 600;">${item.title}</div>
+                                <div style="font-size: 12px; color: var(--gray);">${item.seller}</div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-weight: 600;">${item.price} ₽</span>
+                                <i class="fas fa-times" style="color: var(--danger); cursor: pointer;" onclick="removeFromCart(${index})"></i>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                cartItems.innerHTML = itemsHtml;
+                cartTotal.textContent = `Итого: ${total} ₽`;
+                cartBadge.textContent = cart.length;
+                cartBadge.style.display = 'block';
+            }
+        }
+
+        // Удаление из корзины
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        // Оформление заказа
+        function checkout() {
+            if (cart.length === 0) {
+                tg.showPopup({
+                    title: '❌ Ошибка',
+                    message: 'Корзина пуста',
+                    buttons: [{type: 'ok'}]
+                });
+                return;
+            }
+            
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            
+            // Отправляем заказ боту
+            tg.sendData(JSON.stringify({
+                type: 'order',
+                items: cart.map(item => ({
+                    id: item.id,
+                    title: item.title,
+                    price: item.price,
+                    seller: item.seller
+                })),
+                total: total
+            }));
+            
+            // Сохраняем для отзыва
+            currentReviewProduct = cart[0];
+            
+            cart = [];
+            updateCartUI();
+            toggleCart();
+            
+            tg.showPopup({
+                title: '✅ Заказ оформлен!',
+                message: 'Можете оставить отзыв',
+                buttons: [
+                    {id: 'review', text: 'Оставить отзыв'},
+                    {type: 'ok', text: 'Закрыть'}
+                ]
+            }, (btnId) => {
+                if (btnId === 'review') {
+                    showReviewModal(currentReviewProduct.id);
+                }
+            });
+        }
+
+        // Показать модалку отзыва
+        function showReviewModal(productId) {
+            currentReviewProduct = products.find(p => p.id === productId);
+            document.getElementById('reviewModal').classList.add('active');
+            
+            // Сброс звезд
+            document.querySelectorAll('.rating-stars i').forEach(star => {
+                star.className = 'far fa-star';
+            });
+            currentRating = 0;
+        }
+
+        // Отправка отзыва
+        function submitReview() {
+            const text = document.getElementById('reviewText').value;
+            
+            if (currentRating === 0) {
+                tg.showPopup({
+                    title: '❌ Ошибка',
+                    message: 'Поставьте оценку',
+                    buttons: [{type: 'ok'}]
+                });
+                return;
+            }
+            
+            if (!text.trim()) {
+                tg.showPopup({
+                    title: '❌ Ошибка',
+                    message: 'Напишите отзыв',
+                    buttons: [{type: 'ok'}]
+                });
+                return;
+            }
+            
+            tg.sendData(JSON.stringify({
+                type: 'review',
+                productId: currentReviewProduct.id,
+                rating: currentRating,
+                text: text
+            }));
+            
+            document.getElementById('reviewModal').classList.remove('active');
+            document.getElementById('reviewText').value = '';
+            
+            tg.showPopup({
+                title: '✅ Спасибо!',
+                message: 'Отзыв отправлен',
+                buttons: [{type: 'ok'}]
+            });
+        }
+
+        // Пополнение баланса
+        function topup(stars) {
+            tg.sendData(JSON.stringify({
+                type: 'topup',
+                stars: stars
+            }));
+            closeTopupModal();
+            
+            tg.showPopup({
+                title: '⭐️ Создан счет',
+                message: `Открой чат с ботом для оплаты ${stars} Stars`,
+                buttons: [{type: 'ok'}]
+            });
+        }
+
+        // Навигация
+        function showPage(page) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(`page-${page}`).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            const navIndex = page === 'home' ? 0 : page === 'profile' ? 1 : 2;
+            document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
+        }
+
+        // Корзина
+        function toggleCart() {
+            document.getElementById('cartSidebar').classList.toggle('active');
+        }
+
+        // Модалки
+        function showTopupModal() {
+            document.getElementById('topupModal').classList.add('active');
+        }
+
+        function closeTopupModal() {
+            document.getElementById('topupModal').classList.remove('active');
+        }
+
+        // Поиск
+        function searchProducts() {
+            displayProducts();
+        }
+
+        // Обработчики событий
+        document.querySelectorAll('.category').forEach(cat => {
+            cat.addEventListener('click', function() {
+                document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                displayProducts();
+            });
+        });
+
+        document.querySelectorAll('.filter-chip').forEach(filter => {
+            filter.addEventListener('click', function() {
+                document.querySelectorAll('.filter-chip').forEach(f => f.classList.remove('active'));
+                this.classList.add('active');
+                displayProducts();
+            });
+        });
+
+        document.querySelectorAll('.rating-stars i').forEach(star => {
+            star.addEventListener('click', function() {
+                const rating = parseInt(this.dataset.rating);
+                currentRating = rating;
+                
+                document.querySelectorAll('.rating-stars i').forEach((s, index) => {
+                    if (index < rating) {
+                        s.className = 'fas fa-star';
+                    } else {
+                        s.className = 'far fa-star';
+                    }
+                });
+            });
+        });
+
+        // Поддержка
+        function showSupport() {
+            tg.openTelegramLink(`https://t.me/Lufiuz`);
+        }
+
+        function showFaq() {
+            showPage('home');
+            tg.showPopup({
+                title: 'ℹ️ FAQ',
+                message: '1. Как пополнить баланс?\nНажми на баланс в шапке или в профиле\n\n2. Как оформить заказ?\nДобавь товар в корзину и нажми "Оформить"\n\n3. Что такое эскроу?\nДеньги замораживаются до подтверждения\n\n4. Как открыть спор?\nВ разделе "Мои заказы"',
+                buttons: [{type: 'ok'}]
+            });
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+        });
+        
+        // Загрузка данных
+        function loadData() {
+            try {
+                // Получаем данные пользователя из Telegram
+                userData = tg.initDataUnsafe?.user;
+                if (userData) {
+                    document.getElementById('profileName').textContent = userData.first_name || 'Пользователь';
+                    document.getElementById('profileUsername').textContent = userData.username ? '@' + userData.username : 'нет username';
+                    
+                    // Загружаем товары
+                    loadProducts();
+                }
+            } catch (e) {
+                console.error('Error loading data:', e);
+            }
+        }
+
+        // Загрузка товаров
+        function loadProducts() {
+            // Здесь должны быть реальные товары из бд
+            products = [
+                {
+                    id: 1,
+                    seller: 'CodeMaster',
+                    sellerAvatar: 'CM',
+                    verified: true,
+                    rating: 4.8,
+                    reviews: 127,
+                    title: 'Разработка Telegram бота',
+                    desc: 'Напишу бота любой сложности на Python',
+                    tags: ['Python', 'Bot', 'Telegram'],
+                    price: 5000,
+                    oldPrice: 7000,
+                    category: 'Разработка',
+                    image: 'https://via.placeholder.com/300x200/667eea/ffffff?text=Bot',
+                    sellerReviews: [
+                        {user: 'Алексей', rating: 5, text: 'Отличный бот, всё работает!', date: '2026-03-01'},
+                        {user: 'Мария', rating: 5, text: 'Быстро и качественно', date: '2026-02-28'}
+                    ]
+                },
+                {
+                    id: 2,
+                    seller: 'WebDesignPro',
+                    sellerAvatar: 'WD',
+                    verified: true,
+                    rating: 4.9,
+                    reviews: 89,
+                    title: 'Веб-дизайн + верстка',
+                    desc: 'Современный адаптивный дизайн сайтов',
+                    tags: ['Design', 'HTML/CSS', 'Figma'],
+                    price: 7500,
+                    oldPrice: 10000,
+                    category: 'Дизайн',
+                    image: 'https://via.placeholder.com/300x200/f093fb/ffffff?text=Design',
+                    sellerReviews: [
+                        {user: 'Дмитрий', rating: 5, text: 'Классный дизайн!', date: '2026-03-05'}
+                    ]
+                },
+                {
+                    id: 3,
+                    seller: 'SEO Guru',
+                    sellerAvatar: 'SG',
+                    verified: false,
+                    rating: 4.6,
+                    reviews: 54,
+                    title: 'SEO продвижение',
+                    desc: 'Подниму сайт в топ выдачи',
+                    tags: ['SEO', 'Google', 'Yandex'],
+                    price: 4000,
+                    oldPrice: 6000,
+                    category: 'SEO',
+                    image: 'https://via.placeholder.com/300x200/5f2c82/ffffff?text=SEO',
+                    sellerReviews: [
+                        {user: 'Иван', rating: 4, text: 'Трафик вырос', date: '2026-02-20'}
+                    ]
+                },
+                {
+                    id: 4,
+                    seller: 'Copywriter',
+                    sellerAvatar: 'CW',
+                    verified: true,
+                    rating: 5.0,
+                    reviews: 203,
+                    title: 'Написание текстов',
+                    desc: 'Продающие тексты для сайтов и соцсетей',
+                    tags: ['Копирайтинг', 'Контент'],
+                    price: 2500,
+                    oldPrice: 3500,
+                    category: 'Контент',
+                    image: 'https://via.placeholder.com/300x200/ff9a9e/ffffff?text=Copywriting',
+                    sellerReviews: [
+                        {user: 'Ольга', rating: 5, text: 'Отличные тексты!', date: '2026-03-07'},
+                        {user: 'Павел', rating: 5, text: 'Конверсия выросла', date: '2026-03-06'}
+                    ]
+                }
+            ];
+            displayProducts();
+        }
+        
+        // Обновление баланса из бота
+        tg.onEvent('webAppData', (data) => {
+            try {
+                const response = JSON.parse(data);
+                if (response.type === 'balance_update') {
+                    balance = response.balance;
+                    document.getElementById('balanceDisplay').textContent = balance;
+                }
+            } catch (e) {}
+        });
+    </script>
+</body>
+</html>
