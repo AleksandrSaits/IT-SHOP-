@@ -6,10 +6,780 @@
     <title>IT|SHOP ✓ - Маркетплейс IT услуг</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        :root {
+            --primary: #40a7e3;
+            --primary-dark: #2c8bcb;
+            --success: #4caf50;
+            --danger: #f44336;
+            --warning: #ff9800;
+            --dark: #1a1a1a;
+            --light: #f8f9fa;
+            --gray: #6c757d;
+            --border: #e9ecef;
+        }
+
+        body {
+            background: var(--tg-theme-bg-color, var(--light));
+            color: var(--tg-theme-text-color, var(--dark));
+            padding-bottom: 100px;
+        }
+
+        .header {
+            background: var(--tg-theme-header-bg-color, white);
+            padding: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, #9b59b6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-badge {
+            background: var(--primary);
+            color: white;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 20px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .header-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--danger);
+            color: white;
+            font-size: 10px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .balance-widget {
+            background: linear-gradient(135deg, var(--primary) 0%, #9b59b6 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .search-section {
+            padding: 12px 16px;
+        }
+
+        .search-box {
+            background: var(--tg-theme-secondary-bg-color, white);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .search-box i {
+            color: var(--gray);
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .categories {
+            padding: 8px 16px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .category {
+            background: var(--tg-theme-secondary-bg-color, white);
+            padding: 8px 16px;
+            border-radius: 50px;
+            white-space: nowrap;
+            font-weight: 500;
+            font-size: 14px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .category.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .category i {
+            margin-right: 5px;
+        }
+
+        .filters {
+            padding: 8px 16px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+        }
+
+        .filter-chip {
+            background: var(--tg-theme-secondary-bg-color, white);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-chip.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .banner {
+            margin: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .banner h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .banner p {
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+
+        .banner-btn {
+            background: white;
+            color: #764ba2;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .banner-stars {
+            position: absolute;
+            right: -20px;
+            top: -20px;
+            font-size: 100px;
+            opacity: 0.2;
+            transform: rotate(15deg);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .product-card {
+            background: var(--tg-theme-secondary-bg-color, white);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+            transition: transform 0.2s;
+        }
+
+        .product-card:active {
+            transform: scale(0.98);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            backdrop-filter: blur(5px);
+        }
+
+        .product-rating {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            backdrop-filter: blur(5px);
+        }
+
+        .product-info {
+            padding: 16px;
+        }
+
+        .product-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .seller-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .seller-details {
+            flex: 1;
+        }
+
+        .seller-name {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .verified {
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .seller-stats {
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .product-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .product-desc {
+            color: var(--gray);
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .product-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .tag {
+            background: var(--tg-theme-bg-color, #f0f0f0);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            color: var(--gray);
+        }
+
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .price-block {
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+
+        .current-price {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .old-price {
+            font-size: 14px;
+            color: var(--gray);
+            text-decoration: line-through;
+        }
+
+        .buy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .reviews-section {
+            margin-top: 16px;
+            padding: 0 16px 16px;
+        }
+
+        .review-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .review-card {
+            background: var(--tg-theme-bg-color, #f8f9fa);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .reviewer-name {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .review-stars {
+            color: #ffc107;
+            font-size: 12px;
+        }
+
+        .review-text {
+            font-size: 13px;
+            color: var(--gray);
+            margin-bottom: 6px;
+        }
+
+        .review-date {
+            font-size: 11px;
+            color: var(--gray);
+            opacity: 0.7;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary) 0%, #9b59b6 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: white;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: var(--primary);
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .profile-menu {
+            padding: 20px;
+        }
+
+        .profile-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: var(--tg-theme-secondary-bg-color, white);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .order-card {
+            background: var(--tg-theme-secondary-bg-color, white);
+            border-radius: 16px;
+            padding: 16px;
+            margin: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .order-status {
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-disputed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .order-product {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .order-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .order-details {
+            flex: 1;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .confirm-btn {
+            background: var(--success);
+            color: white;
+        }
+
+        .dispute-btn {
+            background: var(--danger);
+            color: white;
+        }
+
+        .cart-sidebar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--tg-theme-bg-color, white);
+            border-radius: 24px 24px 0 0;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            padding: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+            z-index: 2000;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .cart-sidebar.active {
+            transform: translateY(0);
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .cart-items {
+            margin-bottom: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cart-total {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 20px 0;
+            text-align: right;
+        }
+
+        .checkout-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            width: 100%;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .review-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .review-modal.active {
+            display: flex;
+        }
+
+        .review-content {
+            background: var(--tg-theme-bg-color, white);
+            width: 90%;
+            max-width: 400px;
+            border-radius: 24px;
+            padding: 24px;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+            font-size: 30px;
+            color: #ffc107;
+            cursor: pointer;
+        }
+
+        .rating-stars i {
+            transition: transform 0.2s;
+        }
+
+        .rating-stars i:hover {
+            transform: scale(1.2);
+        }
+
+        .review-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin: 15px 0;
+            font-size: 14px;
+            resize: none;
+            min-height: 100px;
+        }
+
+        .submit-review {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            width: 100%;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--tg-theme-bg-color, white);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--gray);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        .cart-badge {
+            background: var(--danger);
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            position: absolute;
+            top: 0;
+            right: -5px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .animate-in {
+            animation: slideIn 0.3s ease;
+        }
+    </style>
 </head>
 <body>
-    <!-- Шапка -->
     <div class="header">
         <div class="header-content">
             <div class="logo">
@@ -29,7 +799,6 @@
         </div>
     </div>
 
-    <!-- Поиск -->
     <div class="search-section">
         <div class="search-box">
             <i class="fas fa-search"></i>
@@ -37,799 +806,4 @@
         </div>
     </div>
 
-    <!-- Категории -->
-    <div class="categories" id="categories">
-        <div class="category active" data-cat="all">
-            <i class="fas fa-th-large"></i> Все
-        </div>
-        <div class="category" data-cat="Разработка">
-            <i class="fas fa-code"></i> Разработка
-        </div>
-        <div class="category" data-cat="Дизайн">
-            <i class="fas fa-paint-brush"></i> Дизайн
-        </div>
-        <div class="category" data-cat="SEO">
-            <i class="fas fa-chart-line"></i> SEO
-        </div>
-        <div class="category" data-cat="Контент">
-            <i class="fas fa-file-alt"></i> Контент
-        </div>
-        <div class="category" data-cat="Маркетинг">
-            <i class="fas fa-bullhorn"></i> Маркетинг
-        </div>
-    </div>
-
-    <!-- Фильтры -->
-    <div class="filters" id="filters">
-        <div class="filter-chip active" data-filter="all">Все</div>
-        <div class="filter-chip" data-filter="popular">Популярные</div>
-        <div class="filter-chip" data-filter="new">Новинки</div>
-        <div class="filter-chip" data-filter="price_asc">Цена ↑</div>
-        <div class="filter-chip" data-filter="price_desc">Цена ↓</div>
-        <div class="filter-chip" data-filter="rating">По рейтингу</div>
-    </div>
-
-    <!-- Баннер -->
-    <div class="banner">
-        <h3>💫 Пополни Stars — получи бонус!</h3>
-        <p>+15% к балансу при пополнении от 1000 ⭐️</p>
-        <button class="banner-btn" onclick="showPage('profile')">
-            <i class="fas fa-star"></i> Пополнить
-        </button>
-        <div class="banner-stars">⭐️</div>
-    </div>
-
-    <!-- Страницы -->
-    <div class="pages">
-        <!-- Главная -->
-        <div class="page active" id="page-home">
-            <div class="products-grid" id="productsGrid"></div>
-        </div>
-
-        <!-- Профиль -->
-        <div class="page" id="page-profile">
-            <div class="profile-header">
-                <div class="profile-avatar" id="profileAvatar">
-                    <i class="fas fa-user"></i>
-                </div>
-                <h2 id="profileName">Загрузка...</h2>
-                <p id="profileUsername">@username</p>
-                <div class="profile-stats">
-                    <div class="stat-item">
-                        <div class="stat-value" id="statOrders">0</div>
-                        <div class="stat-label">Заказов</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="statSpent">0</div>
-                        <div class="stat-label">Потрачено</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value" id="statRating">0</div>
-                        <div class="stat-label">Рейтинг</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="profile-menu">
-                <div class="profile-menu-item" onclick="showTopupModal()">
-                    <i class="fas fa-star" style="color: #ffc107;"></i>
-                    <div>
-                        <div style="font-weight: 600;">Пополнить баланс</div>
-                        <div style="font-size: 13px; color: var(--gray);">Telegram Stars</div>
-                    </div>
-                </div>
-                <div class="profile-menu-item" onclick="showPage('orders')">
-                    <i class="fas fa-box" style="color: var(--primary);"></i>
-                    <div>
-                        <div style="font-weight: 600;">Мои заказы</div>
-                        <div style="font-size: 13px; color: var(--gray);">История покупок</div>
-                    </div>
-                </div>
-                <div class="profile-menu-item" onclick="showSupport()">
-                    <i class="fas fa-headset" style="color: var(--success);"></i>
-                    <div>
-                        <div style="font-weight: 600;">Поддержка</div>
-                        <div style="font-size: 13px; color: var(--gray);">Связаться с админом</div>
-                    </div>
-                </div>
-                <div class="profile-menu-item" onclick="showFaq()">
-                    <i class="fas fa-question-circle" style="color: var(--warning);"></i>
-                    <div>
-                        <div style="font-weight: 600;">FAQ</div>
-                        <div style="font-size: 13px; color: var(--gray);">Частые вопросы</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Мои заказы -->
-        <div class="page" id="page-orders">
-            <div style="padding: 16px;">
-                <h2 style="margin-bottom: 16px;">📦 Мои заказы</h2>
-                <div id="ordersList"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Корзина -->
-    <div class="cart-sidebar" id="cartSidebar">
-        <div class="cart-header">
-            <h2>🛒 Корзина</h2>
-            <i class="fas fa-times" onclick="toggleCart()" style="font-size: 24px; cursor: pointer;"></i>
-        </div>
-        <div class="cart-items" id="cartItems"></div>
-        <div class="cart-total" id="cartTotal">Итого: 0 ₽</div>
-        <button class="checkout-btn" onclick="checkout()">Оформить заказ</button>
-    </div>
-
-    <!-- Модалка пополнения -->
-    <div class="review-modal" id="topupModal">
-        <div class="review-content">
-            <h2 style="margin-bottom: 20px;">⭐️ Пополнение баланса</h2>
-            <div style="margin-bottom: 20px; padding: 15px; background: var(--tg-theme-bg-color, #f8f9fa); border-radius: 12px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <span>100 ⭐️</span>
-                    <span>= 150 ₽</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <span>500 ⭐️</span>
-                    <span>= 750 ₽</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                    <span>1000 ⭐️</span>
-                    <span>= 1500 ₽</span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span>5000 ⭐️</span>
-                    <span>= 7500 ₽</span>
-                </div>
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px;">
-                <button class="buy-btn" style="justify-content: center;" onclick="topup(100)">100 ⭐️</button>
-                <button class="buy-btn" style="justify-content: center;" onclick="topup(500)">500 ⭐️</button>
-                <button class="buy-btn" style="justify-content: center;" onclick="topup(1000)">1000 ⭐️</button>
-                <button class="buy-btn" style="justify-content: center;" onclick="topup(5000)">5000 ⭐️</button>
-            </div>
-            <button class="submit-review" style="background: var(--gray);" onclick="closeTopupModal()">Отмена</button>
-        </div>
-    </div>
-
-    <!-- Модалка отзыва -->
-    <div class="review-modal" id="reviewModal">
-        <div class="review-content">
-            <h2>⭐️ Оставить отзыв</h2>
-            <div class="rating-stars" id="ratingStars">
-                <i class="far fa-star" data-rating="1"></i>
-                <i class="far fa-star" data-rating="2"></i>
-                <i class="far fa-star" data-rating="3"></i>
-                <i class="far fa-star" data-rating="4"></i>
-                <i class="far fa-star" data-rating="5"></i>
-            </div>
-            <textarea class="review-textarea" id="reviewText" placeholder="Напишите ваш отзыв..."></textarea>
-            <button class="submit-review" onclick="submitReview()">Отправить</button>
-        </div>
-    </div>
-
-    <!-- Нижняя навигация -->
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="showPage('home')">
-            <i class="fas fa-home"></i>
-            <span>Главная</span>
-        </div>
-        <div class="nav-item" onclick="showPage('profile')">
-            <i class="fas fa-user"></i>
-            <span>Профиль</span>
-        </div>
-        <div class="nav-item" onclick="showPage('orders')">
-            <i class="fas fa-box"></i>
-            <span>Заказы</span>
-        </div>
-        <div class="nav-item" onclick="toggleCart()">
-            <i class="fas fa-shopping-cart"></i>
-            <span>Корзина</span>
-            <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
-        </div>
-    </div>
-
-    <script>
-        // Telegram Web App
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
-
-        // Данные
-        let products = [];
-        let cart = [];
-        let currentReviewProduct = null;
-        let currentRating = 0;
-        let balance = 0;
-        let userData = null;
-        let notifications = [];
-
-        // Загрузка данных
-        async function loadData() {
-            try {
-                // Получаем данные пользователя из Telegram
-                userData = tg.initDataUnsafe?.user;
-                if (userData) {
-                    document.getElementById('profileName').textContent = userData.first_name || 'Пользователь';
-                    document.getElementById('profileUsername').textContent = userData.username ? '@' + userData.username : 'нет username';
-                    
-                    // Загружаем товары
-                    await loadProducts();
-                    
-                    // Загружаем баланс из бота (через WebApp)
-                    tg.sendData(JSON.stringify({
-                        type: 'get_balance'
-                    }));
-                }
-            } catch (e) {
-                console.error('Error loading data:', e);
-            }
-        }
-
-        // Загрузка товаров
-        async function loadProducts() {
-            // Здесь должны быть реальные товары из бд
-            products = [
-                {
-                    id: 1,
-                    seller: 'CodeMaster',
-                    sellerAvatar: 'CM',
-                    verified: true,
-                    rating: 4.8,
-                    reviews: 127,
-                    title: 'Разработка Telegram бота',
-                    desc: 'Напишу бота любой сложности на Python',
-                    tags: ['Python', 'Bot', 'Telegram'],
-                    price: 5000,
-                    oldPrice: 7000,
-                    category: 'Разработка',
-                    image: 'https://via.placeholder.com/300x200/667eea/ffffff?text=Bot',
-                    sellerReviews: [
-                        {user: 'Алексей', rating: 5, text: 'Отличный бот, всё работает!', date: '2026-03-01'},
-                        {user: 'Мария', rating: 5, text: 'Быстро и качественно', date: '2026-02-28'}
-                    ]
-                },
-                {
-                    id: 2,
-                    seller: 'WebDesignPro',
-                    sellerAvatar: 'WD',
-                    verified: true,
-                    rating: 4.9,
-                    reviews: 89,
-                    title: 'Веб-дизайн + верстка',
-                    desc: 'Современный адаптивный дизайн сайтов',
-                    tags: ['Design', 'HTML/CSS', 'Figma'],
-                    price: 7500,
-                    oldPrice: 10000,
-                    category: 'Дизайн',
-                    image: 'https://via.placeholder.com/300x200/f093fb/ffffff?text=Design',
-                    sellerReviews: [
-                        {user: 'Дмитрий', rating: 5, text: 'Классный дизайн!', date: '2026-03-05'}
-                    ]
-                },
-                {
-                    id: 3,
-                    seller: 'SEO Guru',
-                    sellerAvatar: 'SG',
-                    verified: false,
-                    rating: 4.6,
-                    reviews: 54,
-                    title: 'SEO продвижение',
-                    desc: 'Подниму сайт в топ выдачи',
-                    tags: ['SEO', 'Google', 'Yandex'],
-                    price: 4000,
-                    oldPrice: 6000,
-                    category: 'SEO',
-                    image: 'https://via.placeholder.com/300x200/5f2c82/ffffff?text=SEO',
-                    sellerReviews: [
-                        {user: 'Иван', rating: 4, text: 'Трафик вырос', date: '2026-02-20'}
-                    ]
-                },
-                {
-                    id: 4,
-                    seller: 'Copywriter',
-                    sellerAvatar: 'CW',
-                    verified: true,
-                    rating: 5.0,
-                    reviews: 203,
-                    title: 'Написание текстов',
-                    desc: 'Продающие тексты для сайтов и соцсетей',
-                    tags: ['Копирайтинг', 'Контент'],
-                    price: 2500,
-                    oldPrice: 3500,
-                    category: 'Контент',
-                    image: 'https://via.placeholder.com/300x200/ff9a9e/ffffff?text=Copywriting',
-                    sellerReviews: [
-                        {user: 'Ольга', rating: 5, text: 'Отличные тексты!', date: '2026-03-07'},
-                        {user: 'Павел', rating: 5, text: 'Конверсия выросла', date: '2026-03-06'}
-                    ]
-                }
-            ];
-            displayProducts();
-        }
-
-        // Отображение товаров
-        function displayProducts(filter = 'all') {
-            const grid = document.getElementById('productsGrid');
-            grid.innerHTML = '';
-            
-            let filteredProducts = [...products];
-            
-            // Фильтр по категории
-            const activeCategory = document.querySelector('.category.active')?.dataset.cat;
-            if (activeCategory && activeCategory !== 'all') {
-                filteredProducts = filteredProducts.filter(p => p.category === activeCategory);
-            }
-            
-            // Поиск
-            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
-            if (searchQuery) {
-                filteredProducts = filteredProducts.filter(p => 
-                    p.title.toLowerCase().includes(searchQuery) ||
-                    p.desc.toLowerCase().includes(searchQuery) ||
-                    p.tags.some(t => t.toLowerCase().includes(searchQuery))
-                );
-            }
-            
-            // Сортировка
-            const activeFilter = document.querySelector('.filter-chip.active')?.dataset.filter;
-            if (activeFilter === 'price_asc') {
-                filteredProducts.sort((a, b) => a.price - b.price);
-            } else if (activeFilter === 'price_desc') {
-                filteredProducts.sort((a, b) => b.price - a.price);
-            } else if (activeFilter === 'rating') {
-                filteredProducts.sort((a, b) => b.rating - a.rating);
-            } else if (activeFilter === 'popular') {
-                filteredProducts.sort((a, b) => b.reviews - a.reviews);
-            }
-            
-            filteredProducts.forEach(product => {
-                const stars = '★'.repeat(Math.floor(product.rating)) + (product.rating % 1 ? '½' : '');
-                
-                const card = document.createElement('div');
-                card.className = 'product-card animate-in';
-                
-                // Последние 2 отзыва
-                const recentReviews = product.sellerReviews.slice(-2).map(r => `
-                    <div class="review-card">
-                        <div class="review-header">
-                            <span class="reviewer-name">${r.user}</span>
-                            <span class="review-stars">${'★'.repeat(r.rating)}</span>
-                        </div>
-                        <div class="review-text">${r.text}</div>
-                        <div class="review-date">${r.date}</div>
-                    </div>
-                `).join('');
-                
-                card.innerHTML = `
-                    <div class="product-image">
-                        <img src="${product.image}" alt="${product.title}">
-                        <div class="product-badge">${product.category}</div>
-                        <div class="product-rating">
-                            <i class="fas fa-star" style="color: #ffc107;"></i>
-                            ${product.rating} (${product.reviews})
-                        </div>
-                    </div>
-                    <div class="product-info">
-                        <div class="product-header">
-                            <div class="seller-avatar">${product.sellerAvatar}</div>
-                            <div class="seller-details">
-                                <div class="seller-name">
-                                    ${product.seller}
-                                    ${product.verified ? '<i class="fas fa-check-circle verified"></i>' : ''}
-                                </div>
-                                <div class="seller-stats">
-                                    ${product.reviews} отзывов • ${product.rating} ⭐️
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="product-title">${product.title}</div>
-                        <div class="product-desc">${product.desc}</div>
-                        
-                        <div class="product-tags">
-                            ${product.tags.map(t => `<span class="tag">${t}</span>`).join('')}
-                        </div>
-                        
-                        <div class="reviews-section">
-                            <div class="review-title">
-                                <i class="fas fa-star" style="color: #ffc107;"></i>
-                                Последние отзывы
-                            </div>
-                            ${recentReviews || '<div style="color: var(--gray);">Пока нет отзывов</div>'}
-                        </div>
-                        
-                        <div class="product-footer">
-                            <div class="review-title">
-                                <i class="fas fa-star" style="color: #ffc107;"></i>
-                                Последние отзывы
-                            </div>
-                            ${recentReviews || '<div style="color: var(--gray);">Пока нет отзывов</div>'}
-                        </div>
-                        
-                        <div class="product-footer">
-                            <div class="price-block">
-                                <span class="current-price">${product.price} ₽</span>
-                                ${product.oldPrice ? `<span class="old-price">${product.oldPrice} ₽</span>` : ''}
-                            </div>
-                            <button class="buy-btn" onclick="addToCart(${product.id})">
-                                <i class="fas fa-shopping-cart"></i> Купить
-                            </button>
-                        </div>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        // Добавление в корзину
-        function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            cart.push(product);
-            updateCartUI();
-            
-            tg.HapticFeedback.impactOccurred('light');
-            tg.showPopup({
-                title: '✅ Добавлено в корзину',
-                message: `${product.title}`,
-                buttons: [
-                    {id: 'cart', text: 'Перейти в корзину'},
-                    {id: 'continue', type: 'cancel', text: 'Продолжить'}
-                ]
-            }, (btnId) => {
-                if (btnId === 'cart') {
-                    toggleCart();
-                }
-            });
-        }
-
-        // Обновление корзины
-        function updateCartUI() {
-            const cartItems = document.getElementById('cartItems');
-            const cartTotal = document.getElementById('cartTotal');
-            const cartBadge = document.getElementById('cartBadge');
-            
-            if (cart.length === 0) {
-                cartItems.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--gray);">Корзина пуста</div>';
-                cartTotal.textContent = 'Итого: 0 ₽';
-                cartBadge.style.display = 'none';
-            } else {
-                let total = 0;
-                let itemsHtml = '';
-                
-                cart.forEach((item, index) => {
-                    total += item.price;
-                    itemsHtml += `
-                        <div class="cart-item">
-                            <div>
-                                <div style="font-weight: 600;">${item.title}</div>
-                                <div style="font-size: 12px; color: var(--gray);">${item.seller}</div>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <span style="font-weight: 600;">${item.price} ₽</span>
-                                <i class="fas fa-times" style="color: var(--danger); cursor: pointer;" onclick="removeFromCart(${index})"></i>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                cartItems.innerHTML = itemsHtml;
-                cartTotal.textContent = `Итого: ${total} ₽`;
-                cartBadge.textContent = cart.length;
-                cartBadge.style.display = 'block';
-            }
-        }
-
-        // Удаление из корзины
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            updateCartUI();
-            tg.HapticFeedback.impactOccurred('light');
-        }
-
-        // Оформление заказа
-        function checkout() {
-            if (cart.length === 0) {
-                tg.showPopup({
-                    title: '❌ Ошибка',
-                    message: 'Корзина пуста',
-                    buttons: [{type: 'ok'}]
-                });
-                return;
-            }
-            
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
-            
-            // Отправляем заказ боту
-            tg.sendData(JSON.stringify({
-                type: 'order',
-                items: cart.map(item => ({
-                    id: item.id,
-                    title: item.title,
-                    price: item.price,
-                    seller: item.seller
-                })),
-                total: total
-            }));
-            
-            // Сохраняем для отзыва
-            currentReviewProduct = cart[0];
-            
-            cart = [];
-            updateCartUI();
-            toggleCart();
-            
-            tg.showPopup({
-                title: '✅ Заказ оформлен!',
-                message: 'Можете оставить отзыв',
-                buttons: [
-                    {id: 'review', text: 'Оставить отзыв'},
-                    {type: 'ok', text: 'Закрыть'}
-                ]
-            }, (btnId) => {
-                if (btnId === 'review') {
-                    showReviewModal(currentReviewProduct.id);
-                }
-            });
-        }
-
-        // Показать модалку отзыва
-        function showReviewModal(productId) {
-            currentReviewProduct = products.find(p => p.id === productId);
-            document.getElementById('reviewModal').classList.add('active');
-            
-            // Сброс звезд
-            document.querySelectorAll('.rating-stars i').forEach(star => {
-                star.className = 'far fa-star';
-            });
-            currentRating = 0;
-        }
-
-        // Отправка отзыва
-        function submitReview() {
-            const text = document.getElementById('reviewText').value;
-            
-            if (currentRating === 0) {
-                tg.showPopup({
-                    title: '❌ Ошибка',
-                    message: 'Поставьте оценку',
-                    buttons: [{type: 'ok'}]
-                });
-                return;
-            }
-            
-            if (!text.trim()) {
-                tg.showPopup({
-                    title: '❌ Ошибка',
-                    message: 'Напишите отзыв',
-                    buttons: [{type: 'ok'}]
-                });
-                return;
-            }
-            
-            tg.sendData(JSON.stringify({
-                type: 'review',
-                productId: currentReviewProduct.id,
-                rating: currentRating,
-                text: text
-            }));
-            
-            document.getElementById('reviewModal').classList.remove('active');
-            document.getElementById('reviewText').value = '';
-            
-            tg.showPopup({
-                title: '✅ Спасибо!',
-                message: 'Отзыв отправлен',
-                buttons: [{type: 'ok'}]
-            });
-        }
-
-        // Пополнение баланса
-        function topup(stars) {
-            tg.sendData(JSON.stringify({
-                type: 'topup',
-                stars: stars
-            }));
-            closeTopupModal();
-            
-            tg.showPopup({
-                title: '⭐️ Создан счет',
-                message: `Открой чат с ботом для оплаты ${stars} Stars`,
-                buttons: [{type: 'ok'}]
-            });
-        }
-
-        // Навигация
-        function showPage(page) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(`page-${page}`).classList.add('active');
-            
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            const navIndex = page === 'home' ? 0 : page === 'profile' ? 1 : 2;
-            document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
-        }
-
-        // Корзина
-        function toggleCart() {
-            document.getElementById('cartSidebar').classList.toggle('active');
-        }
-
-        // Модалки
-        function showTopupModal() {
-            document.getElementById('topupModal').classList.add('active');
-        }
-
-        function closeTopupModal() {
-            document.getElementById('topupModal').classList.remove('active');
-        }
-
-        // Поиск
-        function searchProducts() {
-            displayProducts();
-        }
-
-        // Обработчики событий
-        document.querySelectorAll('.category').forEach(cat => {
-            cat.addEventListener('click', function() {
-                document.querySelectorAll('.category').forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
-                displayProducts();
-            });
-        });
-
-        document.querySelectorAll('.filter-chip').forEach(filter => {
-            filter.addEventListener('click', function() {
-                document.querySelectorAll('.filter-chip').forEach(f => f.classList.remove('active'));
-                this.classList.add('active');
-                displayProducts();
-            });
-        });
-
-        document.querySelectorAll('.rating-stars i').forEach(star => {
-            star.addEventListener('click', function() {
-                const rating = parseInt(this.dataset.rating);
-                currentRating = rating;
-                
-                document.querySelectorAll('.rating-stars i').forEach((s, index) => {
-                    if (index < rating) {
-                        s.className = 'fas fa-star';
-                    } else {
-                        s.className = 'far fa-star';
-                    }
-                });
-            });
-        });
-
-        // Поддержка
-        function showSupport() {
-            tg.openTelegramLink(`https://t.me/Lufiuz`);
-        }
-
-        function showFaq() {
-            showPage('home');
-            tg.showPopup({
-                title: 'ℹ️ FAQ',
-                message: '1. Как пополнить баланс?\nНажми на баланс в шапке или в профиле\n\n2. Как оформить заказ?\nДобавь товар в корзину и нажми "Оформить"\n\n3. Что такое эскроу?\nДеньги замораживаются до подтверждения\n\n4. Как открыть спор?\nВ разделе "Мои заказы"',
-                buttons: [{type: 'ok'}]
-            });
-        }
-
-        // Инициализация
-        document.addEventListener('DOMContentLoaded', function() {
-            loadData();
-        });
-        
-        // Загрузка данных
-        function loadData() {
-            try {
-                // Получаем данные пользователя из Telegram
-                userData = tg.initDataUnsafe?.user;
-                if (userData) {
-                    document.getElementById('profileName').textContent = userData.first_name || 'Пользователь';
-                    document.getElementById('profileUsername').textContent = userData.username ? '@' + userData.username : 'нет username';
-                    
-                    // Загружаем товары
-                    loadProducts();
-                }
-            } catch (e) {
-                console.error('Error loading data:', e);
-            }
-        }
-
-        // Загрузка товаров
-        function loadProducts() {
-            // Здесь должны быть реальные товары из бд
-            products = [
-                {
-                    id: 1,
-                    seller: 'CodeMaster',
-                    sellerAvatar: 'CM',
-                    verified: true,
-                    rating: 4.8,
-                    reviews: 127,
-                    title: 'Разработка Telegram бота',
-                    desc: 'Напишу бота любой сложности на Python',
-                    tags: ['Python', 'Bot', 'Telegram'],
-                    price: 5000,
-                    oldPrice: 7000,
-                    category: 'Разработка',
-                    image: 'https://via.placeholder.com/300x200/667eea/ffffff?text=Bot',
-                    sellerReviews: [
-                        {user: 'Алексей', rating: 5, text: 'Отличный бот, всё работает!', date: '2026-03-01'},
-                        {user: 'Мария', rating: 5, text: 'Быстро и качественно', date: '2026-02-28'}
-                    ]
-                },
-                {
-                    id: 2,
-                    seller: 'WebDesignPro',
-                    sellerAvatar: 'WD',
-                    verified: true,
-                    rating: 4.9,
-                    reviews: 89,
-                    title: 'Веб-дизайн + верстка',
-                    desc: 'Современный адаптивный дизайн сайтов',
-                    tags: ['Design', 'HTML/CSS', 'Figma'],
-                    price: 7500,
-                    oldPrice: 10000,
-                    category: 'Дизайн',
-                    image: 'https://via.placeholder.com/300x200/f093fb/ffffff?text=Design',
-                    sellerReviews: [
-                        {user: 'Дмитрий', rating: 5, text: 'Классный дизайн!', date: '2026-03-05'}
-                    ]
-                },
-                {
-                    id: 3,
-                    seller: 'SEO Guru',
-                    sellerAvatar: 'SG',
-                    verified: false,
-                    rating: 4.6,
-                    reviews: 54,
-                    title: 'SEO продвижение',
-                    desc: 'Подниму сайт в топ выдачи',
-                    tags: ['SEO', 'Google', 'Yandex'],
-                    price: 4000,
-                    oldPrice: 6000,
-                    category: 'SEO',
-                    image: 'https://via.placeholder.com/300x200/5f2c82/ffffff?text=SEO',
-                    sellerReviews: [
-                        {user: 'Иван', rating: 4, text: 'Трафик вырос', date: '2026-02-20'}
-                    ]
-                },
-                {
-                    id: 4,
-                    seller: 'Copywriter',
-                    sellerAvatar: 'CW',
-                    verified: true,
-                    rating: 5.0,
-                    reviews: 203,
-                    title: 'Написание текстов',
-                    desc: 'Продающие тексты для сайтов и соцсетей',
-                    tags: ['Копирайтинг', 'Контент'],
-                    price: 2500,
-                    oldPrice: 3500,
-                    category: 'Контент',
-                    image: 'https://via.placeholder.com/300x200/ff9a9e/ffffff?text=Copywriting',
-                    sellerReviews: [
-                        {user: 'Ольга', rating: 5, text: 'Отличные тексты!', date: '2026-03-07'},
-                        {user: 'Павел', rating: 5, text: 'Конверсия выросла', date: '2026-03-06'}
-                    ]
-                }
-            ];
-            displayProducts();
-        }
-        
-        // Обновление баланса из бота
-        tg.onEvent('webAppData', (data) => {
-            try {
-                const response = JSON.parse(data);
-                if (response.type === 'balance_update') {
-                    balance = response.balance;
-                    document.getElementById('balanceDisplay').textContent = balance;
-                }
-            } catch (e) {}
-        });
-    </script>
-</body>
-</html>
+    <div class="categories" id="catego
