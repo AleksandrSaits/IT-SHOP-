@@ -1,109 +1,82 @@
 import asyncio
-import sqlite3
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-TOKEN = "8755271111:AAEFdfPoJCGYJcRmykDCPGoCZ6pLbm_Fj5w"
-ADMIN_ID = 8559107011
+TOKEN = "8755271111:AAEKcs3D3iqBzO7w1yp6N-JUl0f_1kCZFsE"
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
 
-# ---------------- DATABASE ----------------
-
-db = sqlite3.connect("bot.db")
-cursor = db.cursor()
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS users(
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-user_id INTEGER
-)
-""")
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS orders(
-id INTEGER PRIMARY KEY AUTOINCREMENT,
-user_id INTEGER,
-text TEXT
-)
-""")
-
-db.commit()
-
-def add_user(user_id):
-    cursor.execute("SELECT * FROM users WHERE user_id=?", (user_id,))
-    if cursor.fetchone() is None:
-        cursor.execute("INSERT INTO users (user_id) VALUES (?)", (user_id,))
-        db.commit()
-
-# ---------------- MENU ----------------
+# ----------- ГЛАВНОЕ МЕНЮ -----------
 
 main_menu = InlineKeyboardMarkup(
-inline_keyboard=[
-[InlineKeyboardButton(text="🤖 AI чат", callback_data="ai")],
-[InlineKeyboardButton(text="🛒 Магазин", callback_data="shop")],
-[InlineKeyboardButton(text="📅 Запись", callback_data="booking")],
-[InlineKeyboardButton(text="💼 Портфолио", callback_data="portfolio")],
-[InlineKeyboardButton(text="📩 Заказать бота", callback_data="order")]
-]
+    inline_keyboard=[
+        [InlineKeyboardButton(text="🤖 AI чат", callback_data="ai")],
+        [InlineKeyboardButton(text="🛒 Магазин", callback_data="shop")],
+        [InlineKeyboardButton(text="📅 Запись", callback_data="booking")],
+        [InlineKeyboardButton(text="💼 Портфолио", callback_data="portfolio")],
+        [InlineKeyboardButton(text="📩 Заказать бота", callback_data="order")]
+    ]
 )
 
-# ---------------- START ----------------
-
-@dp.message(Command("start"))
-async def start(message: types.Message):
-
-    add_user(message.from_user.id)
-
-    text = """
-🤖 *AlexDev Demo Bot*
-
-Этот бот демонстрирует возможности Telegram ботов.
-
-Выберите функцию ниже 👇
-"""
-
-    await message.answer(text, reply_markup=main_menu, parse_mode="Markdown")
-
-# ---------------- AI CHAT ----------------
-
-@dp.callback_query(lambda c: c.data == "ai")
-async def ai_menu(call: types.CallbackQuery):
-
-    text = """
-🤖 *AI Демонстрация*
-
-Напишите любой вопрос и бот ответит.
-
-(В демо версии используется простой ответ)
-"""
-
-    await call.message.edit_text(text, reply_markup=back_button(), parse_mode="Markdown")
-
-@dp.message()
-async def fake_ai(message: types.Message):
-
-    if message.text.startswith("/"):
-        return
-
-    await message.answer(f"🤖 AI ответ:\n\nЯ получил ваш вопрос:\n*{message.text}*", parse_mode="Markdown")
-
-# ---------------- SHOP ----------------
-
-def shop_keyboard():
+def back_button():
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="📱 Телефоны", callback_data="phones")],
-            [InlineKeyboardButton(text="💻 Ноутбуки", callback_data="laptops")],
-            [InlineKeyboardButton(text="🎧 Аксессуары", callback_data="access")],
             [InlineKeyboardButton(text="⬅ Назад", callback_data="back")]
         ]
     )
 
+# ----------- START -----------
+
+@dp.message(Command("start"))
+async def start(message: types.Message):
+
+    text = """
+🤖 *AlexDev Demo Bot*
+
+Это демонстрационный бот разработчика.
+
+Выберите функцию ниже 👇
+"""
+
+    await message.answer(
+        text,
+        parse_mode="Markdown",
+        reply_markup=main_menu
+    )
+
+# ----------- AI ЧАТ -----------
+
+@dp.callback_query(lambda c: c.data == "ai")
+async def ai_menu(callback: types.CallbackQuery):
+
+    text = """
+🤖 *AI Демонстрация*
+
+Напишите любой вопрос.
+Бот ответит (демо версия).
+"""
+
+    await callback.message.edit_text(
+        text,
+        parse_mode="Markdown",
+        reply_markup=back_button()
+    )
+
+# ----------- МАГАЗИН -----------
+
+shop_menu = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [InlineKeyboardButton(text="📱 Телефоны", callback_data="phones")],
+        [InlineKeyboardButton(text="💻 Ноутбуки", callback_data="laptops")],
+        [InlineKeyboardButton(text="🎧 Аксессуары", callback_data="access")],
+        [InlineKeyboardButton(text="⬅ Назад", callback_data="back")]
+    ]
+)
+
 @dp.callback_query(lambda c: c.data == "shop")
-async def shop(call: types.CallbackQuery):
+async def shop(callback: types.CallbackQuery):
 
     text = """
 🛒 *Демо магазин*
@@ -111,23 +84,33 @@ async def shop(call: types.CallbackQuery):
 Выберите категорию товаров.
 """
 
-    await call.message.edit_text(text, reply_markup=shop_keyboard(), parse_mode="Markdown")
+    await callback.message.edit_text(
+        text,
+        parse_mode="Markdown",
+        reply_markup=shop_menu
+    )
+
+# ----------- ТОВАРЫ -----------
 
 @dp.callback_query(lambda c: c.data == "phones")
-async def phones(call: types.CallbackQuery):
+async def phones(callback: types.CallbackQuery):
 
     text = """
 📱 *iPhone 15*
 
 Цена: 999$
 
-Это демонстрация магазина Telegram бота.
+Демонстрационный товар.
 """
 
-    await call.message.edit_text(text, reply_markup=back_button(), parse_mode="Markdown")
+    await callback.message.edit_text(
+        text,
+        parse_mode="Markdown",
+        reply_markup=back_button()
+    )
 
 @dp.callback_query(lambda c: c.data == "laptops")
-async def laptops(call: types.CallbackQuery):
+async def laptops(callback: types.CallbackQuery):
 
     text = """
 💻 *MacBook Pro*
@@ -137,10 +120,14 @@ async def laptops(call: types.CallbackQuery):
 Демонстрационный товар.
 """
 
-    await call.message.edit_text(text, reply_markup=back_button(), parse_mode="Markdown")
+    await callback.message.edit_text(
+        text,
+        parse_mode="Markdown",
+        reply_markup=back_button()
+    )
 
 @dp.callback_query(lambda c: c.data == "access")
-async def access(call: types.CallbackQuery):
+async def access(callback: types.CallbackQuery):
 
     text = """
 🎧 *AirPods Pro*
@@ -150,25 +137,33 @@ async def access(call: types.CallbackQuery):
 Демонстрационный товар.
 """
 
-    await call.message.edit_text(text, reply_markup=back_button(), parse_mode="Markdown")
+    await callback.message.edit_text(
+        text,
+        parse_mode="Markdown",
+        reply_markup=back_button()
+    )
 
-# ---------------- BOOKING ----------------
+# ----------- ЗАПИСЬ -----------
 
 @dp.callback_query(lambda c: c.data == "booking")
-async def booking(call: types.CallbackQuery):
+async def booking(callback: types.CallbackQuery):
 
     text = """
-📅 *Демо записи*
+📅 *Система записи*
 
 Введите ваше имя для записи.
 """
 
-    await call.message.edit_text(text, reply_markup=back_button(), parse_mode="Markdown")
+    await callback.message.edit_text(
+        text,
+        parse_mode="Markdown",
+        reply_markup=back_button()
+    )
 
-# ---------------- PORTFOLIO ----------------
+# ----------- ПОРТФОЛИО -----------
 
 @dp.callback_query(lambda c: c.data == "portfolio")
-async def portfolio(call: types.CallbackQuery):
+async def portfolio(callback: types.CallbackQuery):
 
     text = """
 💼 *Портфолио*
@@ -176,70 +171,51 @@ async def portfolio(call: types.CallbackQuery):
 Я разрабатываю:
 
 🤖 AI боты  
-🛒 магазины  
+🛒 боты магазины  
 📅 системы записи  
 📊 автоматизацию бизнеса
 
-Технологии:
+Стек:
 
 Python • AI • Telegram API
 """
 
-    await call.message.edit_text(text, reply_markup=back_button(), parse_mode="Markdown")
+    await callback.message.edit_text(
+        text,
+        parse_mode="Markdown",
+        reply_markup=back_button()
+    )
 
-# ---------------- ORDER ----------------
+# ----------- ЗАКАЗ БОТА -----------
 
 @dp.callback_query(lambda c: c.data == "order")
-async def order(call: types.CallbackQuery):
+async def order(callback: types.CallbackQuery):
 
     text = """
 📩 *Заказать бота*
 
-Напишите описание вашего проекта.
+Напишите разработчику:
 
-Я свяжусь с вами.
+@Aleks_ai_de
 """
 
-    await call.message.edit_text(text, reply_markup=back_button(), parse_mode="Markdown")
-
-# ---------------- BACK BUTTON ----------------
-
-def back_button():
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
-            [InlineKeyboardButton(text="⬅ Главное меню", callback_data="back")]
-        ]
+    await callback.message.edit_text(
+        text,
+        parse_mode="Markdown",
+        reply_markup=back_button()
     )
 
+# ----------- НАЗАД -----------
+
 @dp.callback_query(lambda c: c.data == "back")
-async def back(call: types.CallbackQuery):
+async def back(callback: types.CallbackQuery):
 
-    await call.message.edit_text("Главное меню:", reply_markup=main_menu)
+    await callback.message.edit_text(
+        "Главное меню:",
+        reply_markup=main_menu
+    )
 
-# ---------------- ADMIN ----------------
-
-@dp.message(Command("admin"))
-async def admin(message: types.Message):
-
-    if message.from_user.id != ADMIN_ID:
-        return
-
-    cursor.execute("SELECT COUNT(*) FROM users")
-    users = cursor.fetchone()[0]
-
-    cursor.execute("SELECT COUNT(*) FROM orders")
-    orders = cursor.fetchone()[0]
-
-    text = f"""
-📊 Статистика
-
-Пользователей: {users}
-Заявок: {orders}
-"""
-
-    await message.answer(text)
-
-# ---------------- RUN ----------------
+# ----------- ЗАПУСК -----------
 
 async def main():
     print("Bot started")
