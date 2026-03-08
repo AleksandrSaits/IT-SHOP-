@@ -3,7 +3,7 @@ from aiogram import Bot, Dispatcher, types
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.filters import Command
 
-bot = Bot(token="TOKEN")
+bot = Bot(token="8755271111:AAEFdfPoJCGYJcRmykDCPGoCZ6pLbm_Fj5w")
 dp = Dispatcher()
 
 menu = ReplyKeyboardMarkup(
