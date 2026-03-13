@@ -1,74 +1,118 @@
 import asyncio
+import logging
 import os
-from aiogram import Bot, Dispatcher
-from aiogram.filters import Command
+import sys
+from aiogram import Bot, Dispatcher, F
+from aiogram.filters import Command, Text
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 from dotenv import load_dotenv
 
-# Загружаем токен
+# --- Настройка логирования ---
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+logger = logging.getLogger(__name__)
+
+# --- Загрузка конфигурации ---
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 if not BOT_TOKEN:
-    raise ValueError("Токен не найден! Проверь .env файл")
+    logger.error("❌ Токен не найден! Проверь .env файл")
+    sys.exit(1)
 
-# Создаем бота
+# --- Инициализация бота ---
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# Клавиатура
-main_keyboard = ReplyKeyboardMarkup(
-    keyboard=[
-        [KeyboardButton(text="💰 Цены"), KeyboardButton(text="📁 Примеры")],
-        [KeyboardButton(text="👤 Обо мне"), KeyboardButton(text="📞 Контакты")]
-    ],
-    resize_keyboard=True
-)
+# --- Клавиатуры ---
+def get_main_keyboard() -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="💰 Цены"), KeyboardButton(text="📁 Примеры")],
+            [KeyboardButton(text="👤 Обо мне"), KeyboardButton(text="📞 Контакты")]
+        ],
+        resize_keyboard=True,
+        input_field_placeholder="Выберите пункт меню..."
+    )
 
-# Старт
+# --- Хендлеры (Обработчики) ---
+
 @dp.message(Command("start"))
 async def start_command(message: Message):
+    logger.info(f"Команда /start от пользователя {message.from_user.id}")
     await message.answer(
         f"👋 Привет, {message.from_user.first_name}!\n\n"
         f"Я Александр, делаю ботов от 2500₽.\n"
-        f"Выбирай 👇",
-        reply_markup=main_keyboard
+        f"Выбирай раздел 👇",
+        reply_markup=get_main_keyboard()
     )
 
-# Цены
-@dp.message(lambda message: message.text == "💰 Цены")
+@dp.message(Text("💰 Цены"))
 async def prices(message: Message):
     await message.answer(
-        "💰 Цены:\n"
+        "💰 **Прайс-лист:**\n"
         "• Простой бот — 2500₽\n"
         "• Бот с каталогом — 3500₽\n"
-        "• Бот с админкой — 5000₽"
+        "• Бот с админкой — 5000₽\n\n"
+        "📞 Для заказа пишите в контакты.",
+        parse_mode="Markdown"
     )
 
-# Примеры
-@dp.message(lambda message: message.text == "📁 Примеры")
+@dp.message(Text("📁 Примеры"))
 async def examples(message: Message):
     await message.answer(
-        "📁 Примеры:\n"
-        "• Бот для записи\n"
-        "• Бот-магазин\n"
-        "• Бот для отзывов"
+        "📁 **Мои работы:**\n"
+        "• Бот для записи клиентов\n"
+        "• Интернет-магазин в Telegram\n"
+        "• Бот для сбора отзывов"
     )
 
-# Обо мне
-@dp.message(lambda message: message.text == "👤 Обо мне")
+@dp.message(Text("👤 Обо мне"))
 async def about(message: Message):
-    await message.answer("👤 Александр, 15 лет. Делаю ботов через нейросети.")
+    await message.answer(
+        "👤 **Обо мне:**\n"
+        "Александр, 15 лет.\n"
+        "Разрабатываю Telegram-ботов с использованием современных технологий и AI."
+    )
 
-# Контакты
-@dp.message(lambda message: message.text == "📞 Контакты")
+@dp.message(Text("📞 Контакты"))
 async def contacts(message: Message):
-    await message.answer("📞 Пиши: @AlexDev_bot_ai")
+    await message.answer(
+        "📞 **Связь со мной:**\n"
+        "Telegram: @AlexDev_bot_ai\n"
+        "Пишите в любое время!"
+    )
 
-# Запуск
+# --- Фолбэк хендлер (на любые другие сообщения) ---
+@dp.message()
+async def unknown_message(message: Message):
+    # Игнорируем, если это не текст (например, фото или стикер)
+    if not message.text:
+        return
+    
+    await message.answer(
+        "Я вас не понял. Пожалуйста, используйте кнопки меню 👇",
+        reply_markup=get_main_keyboard()
+    )
+
+# --- Запуск ---
 async def main():
-    print("✅ Бот запущен!")
-    await dp.start_polling(bot)
+    logger.info("✅ Бот запускается...")
+    try:
+        # allowed_updates=dp.resolve_used_update_types() пропускает только нужные обновления
+        await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
+    except KeyboardInterrupt:
+        logger.info("🛑 Бот остановлен пользователем")
+    finally:
+        await bot.session.close()
+        logger.info("✅ Сессия бота закрыта")
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        logger.critical(f"Критическая ошибка: {e}", exc_info=True)
+        
