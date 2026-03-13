@@ -1,40 +1,69 @@
 import asyncio
-import logging
 import os
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher
 from aiogram.filters import Command
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from dotenv import load_dotenv
 
-# Загружаем токен из .env файла
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-# ТВОЙ ЮЗЕРНЕЙМ
-MY_USERNAME = "AlexDev_bot_ai"
-
-# Проверка что токен загрузился
 if not BOT_TOKEN:
-    raise ValueError("Токен не найден! Создай файл .env с BOT_TOKEN=твой_токен")
+    raise ValueError("Токен не найден!")
 
-# Включаем логирование
-logging.basicConfig(level=logging.INFO)
-
-# Создаем бота
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 
-# ============ КНОПКИ ============
+# КНОПКИ
 main_keyboard = ReplyKeyboardMarkup(
     keyboard=[
-        [
-            KeyboardButton(text="💰 Цены"),
-            KeyboardButton(text="📁 Примеры")
-        ],
-        [
-            KeyboardButton(text="👤 Обо мне"),
-            KeyboardButton(text="📞 Контакты")
+        [KeyboardButton(text="Цены"), KeyboardButton(text="Примеры")],
+        [KeyboardButton(text="Обо мне"), KeyboardButton(text="Контакты")]
+    ],
+    resize_keyboard=True
+)
+
+@dp.message(Command("start"))
+async def start(message: Message):
+    await message.answer(
+        f"Привет, {message.from_user.first_name}!\n\n"
+        f"Я Александр, делаю ботов от 2500₽.\n"
+        f"Выбирай:",
+        reply_markup=main_keyboard
+    )
+
+@dp.message(lambda message: message.text == "Цены")
+async def prices(message: Message):
+    await message.answer(
+        "💰 Цены:\n"
+        "• Простой бот — 2500₽\n"
+        "• Бот с каталогом — 3500₽\n"
+        "• Бот с админкой — 5000₽"
+    )
+
+@dp.message(lambda message: message.text == "Примеры")
+async def examples(message: Message):
+    await message.answer(
+        "📁 Примеры:\n"
+        "• Бот для записи\n"
+        "• Бот-магазин\n"
+        "• Бот для отзывов"
+    )
+
+@dp.message(lambda message: message.text == "Обо мне")
+async def about(message: Message):
+    await message.answer("👤 Александр, 15 лет. Делаю ботов через нейросети.")
+
+@dp.message(lambda message: message.text == "Контакты")
+async def contacts(message: Message):
+    await message.answer("📞 Пиши: @AlexDev_bot_ai")
+
+async def main():
+    print("✅ Бот работает!")
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())            KeyboardButton(text="📞 Контакты")
         ]
     ],
     resize_keyboard=True
