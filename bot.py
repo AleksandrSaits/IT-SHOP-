@@ -3,7 +3,7 @@ import logging
 import os
 import sys
 from aiogram import Bot, Dispatcher, F
-from aiogram.filters import Command, Text
+from aiogram.filters import Command
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 
 # --- Настройка логирования для Render ---
@@ -51,7 +51,8 @@ async def start_command(message: Message):
     except Exception as e:
         logger.error(f"Ошибка в start_command: {e}")
 
-@dp.message(Text("💰 Цены"))
+# ИСПОЛЬЗУЕМ F.text ВМЕСТО Text
+@dp.message(F.text == "💰 Цены")
 async def prices(message: Message):
     try:
         await message.answer(
@@ -65,7 +66,7 @@ async def prices(message: Message):
     except Exception as e:
         logger.error(f"Ошибка в prices: {e}")
 
-@dp.message(Text("📁 Примеры"))
+@dp.message(F.text == "📁 Примеры")
 async def examples(message: Message):
     try:
         await message.answer(
@@ -77,7 +78,7 @@ async def examples(message: Message):
     except Exception as e:
         logger.error(f"Ошибка в examples: {e}")
 
-@dp.message(Text("👤 Обо мне"))
+@dp.message(F.text == "👤 Обо мне")
 async def about(message: Message):
     try:
         await message.answer(
@@ -88,7 +89,7 @@ async def about(message: Message):
     except Exception as e:
         logger.error(f"Ошибка в about: {e}")
 
-@dp.message(Text("📞 Контакты"))
+@dp.message(F.text == "📞 Контакты")
 async def contacts(message: Message):
     try:
         await message.answer(
@@ -99,7 +100,7 @@ async def contacts(message: Message):
     except Exception as e:
         logger.error(f"Ошибка в contacts: {e}")
 
-# --- Фолбэк хендлер (на любые другие сообщения) ---
+# --- Фолбэк хендлер ---
 @dp.message()
 async def unknown_message(message: Message):
     if not message.text:
@@ -122,7 +123,7 @@ async def main():
     except Exception as e:
         logger.critical(f"Критическая ошибка: {e}", exc_info=True)
     finally:
-        await bot.session_close()
+        await bot.session.close()
         logger.info("✅ Сессия бота закрыта")
 
 if __name__ == "__main__":
