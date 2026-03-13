@@ -58,6 +58,80 @@ async def start_command(message: Message):
 async def prices(message: Message):
     await message.answer(
         "💰 **МОИ ЦЕНЫ:**\n\n"
+        "▫️ Простой бот — **2500₽**\n"
+        "▫️ Бот с каталогом — **3500₽**\n"
+        "▫️ Бот с админкой — **5000₽**\n\n"
+        "✅ Всё включено"
+    )
+
+# ============ КНОПКА ПРИМЕРЫ ============
+@dp.message(lambda message: message.text == "📁 Примеры")
+async def examples(message: Message):
+    await message.answer(
+        "📁 **ЧТО ДЕЛАЛ:**\n\n"
+        "🔹 Бот для записи\n"
+        "🔹 Бот-магазин\n"
+        "🔹 Бот для отзывов\n"
+        "🔹 Бот-анкета\n\n"
+        "Хочешь так же? Пиши!"
+    )
+
+# ============ КНОПКА ОБО МНЕ ============
+@dp.message(lambda message: message.text == "👤 Обо мне")
+async def about(message: Message):
+    await message.answer(
+        "👤 **ОБО МНЕ:**\n\n"
+        "🔸 Имя: Александр Балашов\n"
+        "🔸 Возраст: 15 лет\n\n"
+        "🚀 Делаю ботов через нейросети"
+    )
+
+# ============ КНОПКА КОНТАКТЫ ============
+@dp.message(lambda message: message.text == "📞 Контакты")
+async def contacts(message: Message):
+    contact_button = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="💬 Написать", url=f"https://t.me/{MY_USERNAME}")]
+        ]
+    )
+    
+    await message.answer(
+        f"📞 **КОНТАКТЫ:**\n\n"
+        f"👤 Telegram: @{MY_USERNAME}\n"
+        f"👇 Жми кнопку:",
+        reply_markup=contact_button
+    )
+
+# ============ ЗАПУСК ============
+async def main():
+    print("✅ Бот запущен!")
+    await dp.start_polling(bot)
+
+if __name__ == "__main__":
+    asyncio.run(main())            KeyboardButton(text="📞 Контакты")
+        ]
+    ],
+    resize_keyboard=True
+)
+
+# ============ КОМАНДА START ============
+@dp.message(Command("start"))
+async def start_command(message: Message):
+    user_name = message.from_user.first_name
+    await message.answer(
+        f"👋 Привет, {user_name}!\n\n"
+        f"Я Александр Балашов, мне 15 лет.\n"
+        f"🤖 Делаю простых ботов под ключ.\n"
+        f"🔥 Цена от 2500₽\n\n"
+        f"Выбирай функцию ниже 👇",
+        reply_markup=main_keyboard
+    )
+
+# ============ КНОПКА ЦЕНЫ ============
+@dp.message(lambda message: message.text == "💰 Цены")
+async def prices(message: Message):
+    await message.answer(
+        "💰 **МОИ ЦЕНЫ:**\n\n"
         "▫️ Простой бот (заявки, приветствие) — **2500₽**\n"
         "▫️ Бот с каталогом товаров — **3500₽**\n"
         "▫️ Бот с админ-панелью — **5000₽**\n\n"
